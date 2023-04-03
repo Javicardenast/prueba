@@ -1,7 +1,8 @@
 package sample
 
-case class ConfigArgs() extends Serializable {
+import org.apache.commons.cli.{BasicParser, Options}
 
+case class ConfigArgs() extends Serializable {
 
   //PANEL DE AYUDA
   private val OPT_HELP = ("h","help")
@@ -50,4 +51,9 @@ case class ConfigArgs() extends Serializable {
   def getBBDD = bbdd
 
   def getOutFecha: String = outFecha
+
+  def gparse(args: Array[String]) = {
+    val parser = new BasicParser()
+    val cmd = parser.parse(Options,args)
+  }
 }
