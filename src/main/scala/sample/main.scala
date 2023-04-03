@@ -31,19 +31,37 @@ object main {
 
   val logERROR = spark.createDataFrame(spark.sparkContext.emptyRDD[Row],schema)
 
-  def main(args: Array[String]): Unit ={
+  def main(args: Array[String]): Unit = {
     BasicConfigurator.configure()
     val cfg = new ConfigArgs()
-    try{
+    try {
       cfg.parse(args)
 
-      if(cfg.mostrarAyuda){
+      if (cfg.mostrarAyuda) {
         cfg.printHelp()
         System.exit(0)
       }
-    }catch
+    } catch {
       case e: ParseException => LOG.error(CONSOLE_MAGENTA + "ERROR" + e.getMessage + Console.RESET)
+        cfg.printHelp()
+        System.exit(0)
+    }
+    try {
+      println("### APLICATION ID: " + spark.sparkContext.applicationId)
+      val bbdd = cfg.getBBDD
+      val odate = cfg.getOutFecha
+      val odateFormat = odate.substring(0, 4) + "-" + odate.substring(4, 6) + "-" + odate.substring(6, 8)
+
+      println("Lecturas de tablas")
+
+      val pruebaLectura = spark.sql("select * from" + bbdd + ".prueba")
+
+      println("PARAMETROS: OK")
+      println("FECHA: " + odateFormat)
+      println("BBDD: " + bbdd)
+      println("LECTURA TABLA " + pruebaLectura)
 
 
+    }
   }
 }

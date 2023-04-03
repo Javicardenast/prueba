@@ -47,5 +47,7 @@ case class ConfigArgs() extends Serializable {
   private var tablaPagos: String =null
   private var tablaVcart: String =null
 
+  def getBBDD = bbdd
 
+  def getOutFecha: String = outFecha
 }
