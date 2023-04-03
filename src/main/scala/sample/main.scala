@@ -1,13 +1,20 @@
 package sample
 
+import org.antlr.v4.runtime.misc.LogManager
 import org.apache.log4j.BasicConfigurator
 import org.apache.spark.sql._
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
 
 import java.io.File
+import scala.reflect.macros.ParseException
 //import spark.implicits._
 
 object main {
+
+  //Spark log colores
+  val LOG = LogManager.getLogger(getClass.getName)
+  LOG.setLevel(Level.INFO)
+  val CONSOLE_MAGENTA = ""
 
   val warehouseLocation = new File("spark-warehouse").getAbsolutePath
 
@@ -29,7 +36,13 @@ object main {
     val cfg = new ConfigArgs()
     try{
       cfg.parse(args)
-    }
+
+      if(cfg.mostrarAyuda){
+        cfg.printHelp()
+        System.exit(0)
+      }
+    }catch
+      case e: ParseException => LOG.error(CONSOLE_MAGENTA + "ERROR" + e.getMessage + Console.RESET)
 
 
   }
