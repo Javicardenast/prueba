@@ -21,12 +21,12 @@ object main {
   val spark = SparkSession.builder()
     .appName("main")
     .config("spark.master",local)
-    .config("spark.hadoop.fs.defaultFS","hdfs://localhost:9000")
+    .config("spark.hadoop.fs.defaultFS","hdfs://mynodemaster:9000")
     .getOrCreate()
 
   val jdbcDF = spark.read
     .format("jdbc")
-    .option("url", "jdbc:mysql://localhost:3306/prueba_sql")
+    .option("url", "jdbc:mysql://localhost:3306/prueba")
     .option("driver", "com.mysql.cj.jdbc.Driver")
     .option("dbtable", "prueba_sql")
     .option("user", "lct638")
