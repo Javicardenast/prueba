@@ -20,10 +20,25 @@ object main {
 
   val spark = SparkSession.builder()
     .appName("main")
-    .config("spark.sql.warehouse.dir", warehouseLocation)
-    .enableHiveSupport()
+    .config("spark.master",local)
+    .config("spark.hadoop.fs.defaultFS","hdfs://localhost:9000")
     .getOrCreate()
 
+  val jdbcDF = spark.read
+    .format("jdbc")
+    .option("url", "jdbc:mysql://localhost:3306/prueba_sql")
+    .option("driver", "com.mysql.cj.jdbc.Driver")
+    .option("dbtable", "prueba_sql")
+    .option("user", "lct638")
+    .option("password", "Almeria&99")
+    .load()
+
+  jdbcDF.createOrReplaceTempView("mytable")
+
+  val sqlDF = spark.sql("SELECT * FROM mytable")
+  sqlDF.show()
+
+  /*
   val schema = StructType(List(
     StructField("ID",IntegerType,true),
     StructField("contrato",StringType,true),
@@ -61,7 +76,7 @@ object main {
       println("BBDD: " + bbdd)
       println("LECTURA TABLA " + pruebaLectura)
 
-
+*/
     }
   }
 }
