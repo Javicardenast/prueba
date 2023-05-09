@@ -41,7 +41,7 @@ object main {
   def aplicacionDeficit: Unit ={
     import spark.implicits._
 
-    /*
+    /* STOCK - Cálculo de base. CALCULAMOS EL CAPITAL MÍNIMO DE UNA ENTIDAD FINANCIERA
 
     SHORTFALL -- Se refiere a la cantidad de dinero que falta para cubrir una obligación financiera.
     Para el deficit hay que realizar una serie de metricas, tanto las genéricas que afectan a todas las plantillas
@@ -109,25 +109,51 @@ object main {
       .withColumn("ant_deudor",(-datediff(t_deudor.col("f_predeterminada"),col("fdatos"))) / 365)
 
     val cBase_param = ant_deudor.join(t_parametrizada, Seq("fdatos"),"full_outer")
-      .withColumn("deudor_1", when(col("ant_deudor") <= 1, lit(0))
-      .when(whenRange("ant_deudor", 1, 2), lit(1))
-      .when(whenRange("ant_deudor", 1, 2), lit(1))
-      .when(whenRange("ant_deudor", 2, 3), lit(2))
-      .when(whenRange("ant_deudor", 3, 4), lit(3))
-      .when(whenRange("ant_deudor", 4, 5), lit(4))
-      .when(whenRange("ant_deudor", 5, 6), lit(5))
-      .when(whenRange("ant_deudor", 6, 7), lit(6))
-      .when($"ant_deudor" > lit(7), lit(7)))
+      .withColumn("deudor_1",
+        when ($"ant_deudor" === 0, $"base_secured_t1" * $"exp_secured")
+      .when($"ant_deudor" === 1, $"base_secured_t2" * $"exp_secured")
+      .when($"ant_deudor" === 2, $"base_secured_t3" * $"exp_secured")
+      .when($"ant_deudor" === 3, $"base_secured_t4" * $"exp_secured")
+      .when($"ant_deudor" === 4, $"base_secured_t5" * $"exp_secured")
+      .when($"ant_deudor" === 5, $"base_secured_t6" * $"exp_secured")
+      .when($"ant_deudor" === 6, $"base_secured_t7" * $"exp_secured")
+      .when($"ant_deudor" === 7, $"base_secured_t8" * $"exp_secured")
+          .otherwise(lit(0))))
 
-      .withColumn("deudor_2", when(col("ant_deudor") <= 1, lit(0))
-      .when(whenRange("ant_deudor", 1, 2), lit(1))
-      .when(whenRange("ant_deudor", 1, 2), lit(1))
-      .when(whenRange("ant_deudor", 2, 3), lit(2))
-      .when(whenRange("ant_deudor", 3, 4), lit(3))
-      .when(whenRange("ant_deudor", 4, 5), lit(4))
-      .when(whenRange("ant_deudor", 5, 6), lit(5))
-      .when(whenRange("ant_deudor", 6, 7), lit(6))
-      .when($"ant_deudor" > lit(7), lit(7)))
+      .withColumn("deudor_2",
+        when($"ant_deudor" === 0, $"base_unsec_t1" * $"exp_unsecured")
+          .when($"ant_deudor" === 1, $"base_unsec_t2" * $"exp_unsecured")
+          .when($"ant_deudor" === 2, $"base_unsec_t3" * $"exp_unsecured")
+          .when($"ant_deudor" === 3, $"base_unsec_t4" * $"exp_unsecured")
+          .when($"ant_deudor" === 4, $"base_unsec_t5" * $"exp_unsecured")
+          .when($"ant_deudor" === 5, $"base_unsec_t6" * $"exp_unsecured")
+          .when($"ant_deudor" === 6, $"base_unsec_t7" * $"exp_unsecured")
+          .when($"ant_deudor" === 7, $"base_unsec_t8" * $"exp_unsecured")
+          .otherwise(lit(0))))
+
+      .withColumn("deudores", $"deudor1" * $"deudor2")
+
+      .withColumn("base_secured",
+        when($"ant_deudor" === 0, $"base_secured_t1" * $"exp_secured")
+          .when($"ant_deudor" === 1, $"base_secured_t2" * $"exp_secured")
+          .when($"ant_deudor" === 2, $"base_secured_t3" * $"exp_secured")
+          .when($"ant_deudor" === 3, $"base_secured_t4" * $"exp_secured")
+          .when($"ant_deudor" === 4, $"base_secured_t5" * $"exp_secured")
+          .when($"ant_deudor" === 5, $"base_secured_t6" * $"exp_secured")
+          .when($"ant_deudor" === 6, $"base_secured_t7" * $"exp_secured")
+          .when($"ant_deudor" === 7, $"base_secured_t8" * $"exp_secured")
+          .otherwise(lit(0))))
+
+      .withColumn("base_unsecured",
+        when($"ant_deudor" === 0, $"base_unsec_t1")
+          .when($"ant_deudor" === 1, $"base_unsec_t2")
+          .when($"ant_deudor" === 2, $"base_unsec_t3")
+          .when($"ant_deudor" === 3, $"base_unsec_t4")
+          .when($"ant_deudor" === 4, $"base_unsec_t5")
+          .when($"ant_deudor" === 5, $"base_unsec_t6")
+          .when($"ant_deudor" === 6, $"base_unsec_t7")
+          .when($"ant_deudor" === 7, $"base_unsec_t8")
+          .otherwise(lit(0))))
 
        //Calculo de provisiones capped y uncapped
     /*
@@ -150,6 +176,20 @@ object main {
     val output_cBase = cBase_deficit
       .filter($"estandar_riesgo_credito" === 1)
       .select("empresa","identidad","fdatos","ant_deudor","popular","deficit_total","deudor1","deudor2","exp_secured","exp_unsecured","provision_total","prov_sec","prov_unsec")
+
+    /* ADDENDUM - Cálculo de capital adicional. CALCULAMOS EL CAPITAL ADICIONAL EN FUNCIÓN DE LOS RIESGOS ESPECIFICOS
+
+        SHORTFALL -- Se refiere a la cantidad de dinero que falta para cubrir una obligación financiera.
+        Para el deficit hay que realizar una serie de metricas, tanto las genéricas que afectan a todas las plantillas
+        como las mas específicas.
+          - Reglamento 575/2013 exposiciones garantizadas
+              - exposiciones secured y unsecured
+
+         En esta parte se agregará el shotfall de la unidad considerando todos los contratos que esten dentro del ámbito de la plantilla que se reporta,
+         estos pueden ser: stock/addemdum/c35
+         Tal desglose se irá realizando a través del ant_deudor...Es conocidido como antiguedad de la mora, y se refiere a la cantidad de tiempo
+         que una obligación financiera ha estado en mora, es decir, que no se han pagado según los términos acordados.
+         */
 
 
   }
